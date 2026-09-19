@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Stock Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        h1 { text-align: center; grid-column: span 2; }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        h2 { border-bottom: 1px solid #334155; padding-bottom: 10px; margin-top: 0; }
+
+        ul { list-style: none; padding: 0; }
+
+        .stock-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .stock-info { display: flex; flex-direction: column; }
+        .symbol { font-weight: bold; font-size: 1.1em; }
+        .price { color: var(--accent-green); }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-add { background-color: var(--accent-blue); color: white; }
+        .btn-remove { background-color: var(--accent-red); color: white; }
+        button:hover { opacity: 0.8; }
+        button:disabled { background-color: #64748b; cursor: not-allowed; }
+
+        .empty-msg { color: #94a3b8; font-style: italic; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <h1>📈 Trading View</h1>
+
+    <div class="container">
+        <div class="card">
+            <h2>Market Overview</h2>
+            <ul id="market-list">
+                </ul>
+        </div>
+
+        <div class="card">
+            <h2>My Wishlist</h2>
+            <ul id="wishlist">
+                <p class="empty-msg">Your wishlist is empty.</p>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Mock Data
+        const availableStocks = [
+            { id: 1, symbol: 'AAPL', name: 'Apple Inc.', price: 175.40 },
+            { id: 2, symbol: 'TSLA', name: 'Tesla, Inc.', price: 182.10 },
+            { id: 3, symbol: 'NVDA', name: 'NVIDIA Corp.', price: 875.20 },
+            { id: 4, symbol: 'MSFT', name: 'Microsoft', price: 415.50 },
+            { id: 5, symbol: 'GOOGL', name: 'Alphabet Inc.', price: 150.30 }
+        ];
+
+        let wishlist = [];
+
+        function renderMarket() {
+            const marketList = document.getElementById('market-list');
+            marketList.innerHTML = availableStocks.map(stock => {
+                const isInWishlist = wishlist.find(item => item.id === stock.id);
+                return `
+                    <li class="stock-item">
+                        <div class="stock-info">
+                            <span class="symbol">${stock.symbol}</span>
+                            <small>${stock.name}</small>
+                        </div>
+                        <span class="price">$${stock.price.toFixed(2)}</span>
+                        <button 
+                            class="btn-add" 
+                            onclick="addToWishlist(${stock.id})"
+                            ${isInWishlist ? 'disabled' : ''}>
+                            ${isInWishlist ? 'Added' : 'Add'}
+                        </button>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function renderWishlist() {
+            const wishlistContainer = document.getElementById('wishlist');
+            
+            if (wishlist.length === 0) {
+                wishlistContainer.innerHTML = '<p class="empty-msg">Your wishlist is empty.</p>';
+                return;
+            }
+
+            wishlistContainer.innerHTML = wishlist.map(stock => `
+                <li class="stock-item">
+                    <div class="stock-info">
+                        <span class="symbol">${stock.symbol}</span>
+                        <small>$${stock.price.toFixed(2)}</small>
+                    </div>
+                    <button class="btn-remove" onclick="removeFromWishlist(${stock.id})">Remove</button>
+                </li>
+            `).join('');
+        }
+
+        function addToWishlist(id) {
+            const stock = availableStocks.find(s => s.id === id);
+            if (stock && !wishlist.find(item => item.id === id)) {
+                wishlist.push(stock);
+                renderMarket();
+                renderWishlist();
+            }
+        }
+
+        function removeFromWishlist(id) {
+            wishlist = wishlist.filter(item => item.id !== id);
+            renderMarket();
+            renderWishlist();
+        }
+
+        // Initial Load
+        renderMarket();
+        renderWishlist();
+    </script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axium — AI-Powered Stocks Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #1D9E75;
+      --accent-dim: #0F6E56;
+      --accent-glow: rgba(29,158,117,0.12);
+      --red: #E24B4A;
+      --amber: #EF9F27;
+      --fg: #111110;
+      --fg2: #5F5E5A;
+      --fg3: #888780;
+      --bg: #ffffff;
+      --bg2: #F1EFE8;
+      --border: rgba(0,0,0,0.1);
+      --border2: rgba(0,0,0,0.2);
+      --r: 12px;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-body: system-ui, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fg: #f0ede6;
+        --fg2: #9e9b93;
+        --fg3: #6b6860;
+        --bg: #1a1916;
+        --bg2: #232220;
+        --border: rgba(255,255,255,0.1);
+        --border2: rgba(255,255,255,0.2);
+        --accent-glow: rgba(29,158,117,0.15);
+      }
+    }
+
+    body {
+      font-family: var(--font-display);
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.5;
+    }
+
+    /* ─── NAV ─────────────────────────────────────── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 2.5rem;
+      border-bottom: 0.5px solid var(--border);
+      background: var(--bg);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .logo-mark {
+      width: 28px; height: 28px; background: var(--accent);
+      border-radius: 6px; display: flex; align-items: center;
+      justify-content: center; font-size: 13px; font-weight: 800;
+      color: #fff; letter-spacing: -1px;
+    }
+    .logo-text { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .logo-text span { color: var(--accent); }
+
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a {
+      font-size: 13px; color: var(--fg2); text-decoration: none;
+      font-weight: 500; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--fg); }
+
+    .nav-cta {
+      background: var(--accent); color: #fff; border: none;
+      padding: 8px 18px; border-radius: 7px; font-size: 13px;
+      font-weight: 600; cursor: pointer; font-family: var(--font-display);
+    }
+    .nav-cta:hover { background: var(--accent-dim); }
+
+    /* ─── HERO ────────────────────────────────────── */
+    .hero {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem;
+      align-items: center; max-width: 1100px; margin: 0 auto;
+      padding: 5rem 2.5rem 4rem;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--accent-glow); border: 0.5px solid var(--accent);
+      color: var(--accent); font-size: 10px; font-weight: 600;
+      padding: 4px 11px; border-radius: 100px; margin-bottom: 1.3rem;
+      font-family: var(--font-mono); letter-spacing: 0.5px;
+    }
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+    .hero-title {
+      font-size: clamp(2.4rem, 4vw, 3.4rem);
+      font-weight: 800; line-height: 1.05;
+      letter-spacing: -2px; margin-bottom: 1rem;
+    }
+    .hero-title em { color: var(--accent); font-style: normal; }
+
+    .hero-sub {
+      font-size: 15px; color: var(--fg2); line-height: 1.7;
+      font-family: var(--font-body); max-width: 420px; margin-bottom: 2rem;
+    }
+
+    .hero-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--accent); color: #fff; border: none;
+      padding: 12px 24px; border-radius: 8px; font-size: 14px;
+      font-weight: 600; cursor: pointer; font-family: var(--font-display);
+    }
+    .btn-primary:hover { background: var(--accent-dim); }
+    .btn-secondary {
+      background: transparent; color: var(--fg);
+      border: 0.5px solid var(--border2);
+      padding: 12px 20px; border-radius: 8px; font-size: 14px;
+      font-weight: 500; cursor: pointer; font-family: var(--font-display);
+    }
+    .btn-secondary:hover { background: var(--bg2); }
+
+    .trust { display: flex; align-items: center; gap: 10px; margin-top: 1.8rem; }
+    .avatars { display: flex; }
+    .av {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2.5px solid var(--bg);
+      font-size: 9px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: -8px; color: #fff;
+    }
+    .av:first-child { margin-left: 0; }
+    .trust-text { font-size: 12px; color: var(--fg2); font-family: var(--font-body); }
+    .trust-text strong { color: var(--fg); }
+
+    /* ─── DASHBOARD PREVIEW ──────────────────────── */
+    .dashboard-preview {
+      background: var(--bg2); border: 0.5px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    .preview-bar {
+      background: var(--bg); border-bottom: 0.5px solid var(--border);
+      padding: 9px 14px; display: flex; align-items: center; gap: 6px;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .preview-body { padding: 14px; }
+
+    .ticker-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .ticker {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: 6px; padding: 5px 10px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .tk-sym { font-size: 10px; font-weight: 700; color: var(--fg); font-family: var(--font-mono); }
+    .tk-price { font-size: 10px; font-family: var(--font-mono); color: var(--fg2); }
+    .tk-badge { font-size: 8px; font-family: var(--font-mono); padding: 2px 5px; border-radius: 4px; font-weight: 600; }
+    .tk-up { background: rgba(29,158,117,0.1); color: var(--accent); }
+    .tk-dn { background: rgba(226,75,74,0.1); color: var(--red); }
+
+    .mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+    .mini-stat {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+    }
+    .ms-label { font-size: 9px; color: var(--fg3); font-family: var(--font-mono); letter-spacing: 0.5px; margin-bottom: 4px; }
+    .ms-val { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--fg); font-family: var(--font-mono); }
+    .ms-chg { font-size: 9px; font-family: var(--font-mono); margin-top: 2px; }
+    .up { color: var(--accent); }
+    .dn { color: var(--red); }
+
+    .chart-area {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: 8px; padding: 10px 14px; margin-bottom: 10px;
+    }
+    .chart-label { font-size: 9px; color: var(--fg3); font-family: var(--font-mono); letter-spacing: 0.5px; margin-bottom: 6px; }
+    .chart-svg { width: 100%; height: 60px; display: block; }
+
+    .ai-insight {
+      background: var(--accent-glow); border: 0.5px solid var(--accent);
+      border-radius: 8px; padding: 10px 12px;
+      display: flex; align-items: flex-start; gap: 9px;
+    }
+    .ai-icon {
+      width: 20px; height: 20px; border-radius: 5px;
+      background: var(--accent); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+      font-size: 9px; font-weight: 800; color: #fff; letter-spacing: -0.5px;
+    }
+    .ai-text { font-size: 10px; color: var(--fg2); font-family: var(--font-body); line-height: 1.55; }
+    .ai-text strong { color: var(--fg); }
+
+    /* ─── DIVIDER ─────────────────────────────────── */
+    hr { border: none; border-top: 0.5px solid var(--border); margin: 0 2.5rem; }
+
+    /* ─── SECTION BASE ────────────────────────────── */
+    .section { padding: 4.5rem 2.5rem; max-width: 1100px; margin: 0 auto; }
+    .section-eyebrow { font-size: 11px; font-family: var(--font-mono); color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.75rem; }
+    .section-title { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 0.75rem; }
+    .section-sub { font-size: 14px; color: var(--fg2); font-family: var(--font-body); line-height: 1.7; max-width: 480px; margin-bottom: 2.5rem; }
+
+    /* ─── FEATURES ────────────────────────────────── */
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .feat-card {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--r); padding: 1.25rem;
+      transition: border-color 0.2s;
+    }
+    .feat-card:hover { border-color: var(--border2); }
+    .feat-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 18px; }
+    .feat-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .feat-desc { font-size: 12px; color: var(--fg2); font-family: var(--font-body); line-height: 1.65; }
+
+    /* ─── PRICING ─────────────────────────────────── */
+    .pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .plan {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--r); padding: 1.5rem;
+    }
+    .plan.featured { border: 1.5px solid var(--accent); }
+    .plan-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+    .plan-name { font-size: 11px; font-weight: 700; color: var(--fg2); letter-spacing: 0.5px; text-transform: uppercase; font-family: var(--font-mono); }
+    .popular-badge { font-size: 9px; font-family: var(--font-mono); font-weight: 700; background: var(--accent-glow); color: var(--accent); padding: 3px 8px; border-radius: 100px; }
+    .plan-price { font-size: 2rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.25rem; }
+    .plan-price span { font-size: 13px; font-weight: 400; color: var(--fg2); }
+    .plan-desc { font-size: 12px; color: var(--fg2); font-family: var(--font-body); margin-bottom: 1.25rem; }
+    .plan-features { list-style: none; margin-bottom: 1.5rem; }
+    .plan-features li {
+      font-size: 12px; font-family: var(--font-body); color: var(--fg2);
+      padding: 6px 0; border-bottom: 0.5px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .plan-features li:last-child { border-bottom: none; }
+    .check { color: var(--accent); font-size: 11px; font-weight: 700; }
+    .plan-btn {
+      width: 100%; padding: 11px; border-radius: 7px; font-size: 13px;
+      font-weight: 600; cursor: pointer; font-family: var(--font-display);
+      border: 0.5px solid var(--border2); background: transparent; color: var(--fg);
+      transition: background 0.2s;
+    }
+    .plan-btn:hover { background: var(--bg2); }
+    .plan-btn.featured-btn { background: var(--accent); color: #fff; border-color: transparent; }
+    .plan-btn.featured-btn:hover { background: var(--accent-dim); }
+
+    /* ─── CTA STRIP ───────────────────────────────── */
+    .cta-strip {
+      background: var(--bg2); border-top: 0.5px solid var(--border);
+      border-bottom: 0.5px solid var(--border);
+      padding: 4rem 2.5rem; text-align: center;
+    }
+    .cta-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 0.5rem; }
+    .cta-sub { font-size: 14px; color: var(--fg2); font-family: var(--font-body); margin-bottom: 1.75rem; }
+    .cta-form { display: flex; gap: 8px; justify-content: center; max-width: 380px; margin: 0 auto; }
+    .cta-input {
+      flex: 1; height: 42px; border: 0.5px solid var(--border2); border-radius: 8px;
+      padding: 0 14px; font-size: 13px; background: var(--bg); color: var(--fg);
+      font-family: var(--font-body); outline: none;
+    }
+    .cta-input:focus { border-color: var(--accent); }
+    .cta-btn {
+      height: 42px; padding: 0 20px; background: var(--accent); color: #fff;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: var(--font-display); white-space: nowrap;
+    }
+    .cta-btn:hover { background: var(--accent-dim); }
+
+    /* ─── FOOTER ──────────────────────────────────── */
+    footer {
+      padding: 1.5rem 2.5rem; display: flex;
+      justify-content: space-between; align-items: center;
+      border-top: 0.5px solid var(--border);
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-copy { font-size: 12px; color: var(--fg3); font-family: var(--font-body); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { font-size: 12px; color: var(--fg3); text-decoration: none; }
+    .footer-links a:hover { color: var(--fg2); }
+
+    /* ─── RESPONSIVE ──────────────────────────────── */
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; padding: 3rem 1.5rem; }
+      .features { grid-template-columns: 1fr 1fr; }
+      .pricing { grid-template-columns: 1fr; }
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .section { padding: 3rem 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .features { grid-template-columns: 1fr; }
+      .mini-stats { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="logo">
+      <div class="logo-mark">Ax</div>
+      <span class="logo-text">Ax<span>ium</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="#">Features</a>
+      <a href="#">Markets</a>
+      <a href="#">Pricing</a>
+      <a href="#">Docs</a>
+    </div>
+    <button class="nav-cta">Get early access</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <div class="badge"><div class="badge-dot"></div>LIVE MARKET INTELLIGENCE</div>
+      <h1 class="hero-title">Trade with<br><em>AI clarity.</em></h1>
+      <p class="hero-sub">Axium fuses real-time market data with predictive AI to surface opportunities before the crowd sees them. Built for serious investors.</p>
+      <div class="hero-actions">
+        <button class="btn-primary">Start free trial →</button>
+        <button class="btn-secondary">Watch demo</button>
+      </div>
+      <div class="trust">
+        <div class="avatars">
+          <div class="av" style="background:#1D9E75">JK</div>
+          <div class="av" style="background:#378ADD">SR</div>
+          <div class="av" style="background:#D85A30">ML</div>
+          <div class="av" style="background:#7F77DD">AP</div>
+        </div>
+        <span class="trust-text"><strong>12,400+</strong> investors already trading smarter</span>
+      </div>
+    </div>
+
+    <div class="dashboard-preview">
+      <div class="preview-bar">
+        <div class="dot" style="background:#E24B4A"></div>
+        <div class="dot" style="background:#EF9F27"></div>
+        <div class="dot" style="background:#1D9E75"></div>
+      </div>
+      <div class="preview-body">
+        <div class="ticker-row">
+          <div class="ticker"><span class="tk-sym">NVDA</span><span class="tk-price">$874.20</span><span class="tk-badge tk-up">+3.4%</span></div>
+          <div class="ticker"><span class="tk-sym">AAPL</span><span class="tk-price">$189.50</span><span class="tk-badge tk-up">+1.1%</span></div>
+          <div class="ticker"><span class="tk-sym">TSLA</span><span class="tk-price">$196.80</span><span class="tk-badge tk-dn">-2.2%</span></div>
+          <div class="ticker"><span class="tk-sym">MSFT</span><span class="tk-price">$412.10</span><span class="tk-badge tk-up">+0.8%</span></div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <div class="ms-label">PORTFOLIO</div>
+            <div class="ms-val">$84.2K</div>
+            <div class="ms-chg up">▲ +6.4% MTD</div>
+          </div>
+          <div class="mini-stat">
+            <div class="ms-label">AI SIGNALS</div>
+            <div class="ms-val">23</div>
+            <div class="ms-chg up">▲ 18 active</div>
+          </div>
+          <div class="mini-stat">
+            <div class="ms-label">WIN RATE</div>
+            <div class="ms-val">73%</div>
+            <div class="ms-chg" style="color:#EF9F27">● 30-day avg</div>
+          </div>
+        </div>
+        <div class="chart-area">
+          <div class="chart-label">PORTFOLIO PERFORMANCE — 90D</div>
+          <svg class="chart-svg" viewBox="0 0 320 58" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1D9E75" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#1D9E75" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,45 C20,40 35,35 55,30 C70,26 80,28 100,22 C115,18 125,20 145,14 C160,10 170,15 190,10 C205,6 220,12 240,7 C255,3 270,8 290,4 C305,2 312,3 320,2" stroke="#1D9E75" stroke-width="1.5" fill="none"/>
+            <path d="M0,45 C20,40 35,35 55,30 C70,26 80,28 100,22 C115,18 125,20 145,14 C160,10 170,15 190,10 C205,6 220,12 240,7 C255,3 270,8 290,4 C305,2 312,3 320,2 L320,58 L0,58 Z" fill="url(#cg)"/>
+          </svg>
+        </div>
+        <div class="ai-insight">
+          <div class="ai-icon">AI</div>
+          <div class="ai-text"><strong>Signal detected:</strong> NVDA showing momentum divergence ahead of earnings. Historical pattern suggests 78% probability of upside move within 5 sessions.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- FEATURES -->
+  <section class="section">
+    <div class="section-eyebrow">// capabilities</div>
+    <h2 class="section-title">Intelligence at every layer.</h2>
+    <p class="section-sub">From data ingestion to actionable signals, every part of Axium is built to give you an unfair edge in the market.</p>
+    <div class="features">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(29,158,117,0.1)">📡</div>
+        <div class="feat-title">Real-time signal engine</div>
+        <div class="feat-desc">AI scans 800+ data sources — price action, sentiment, macro events — generating weighted signals updated every 30 seconds.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(55,138,221,0.1)">🧠</div>
+        <div class="feat-title">Predictive forecasting</div>
+        <div class="feat-desc">LSTM + transformer models trained on 20 years of market data surface probabilistic price paths for your watchlist.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(226,75,74,0.1)">🛡️</div>
+        <div class="feat-title">Risk intelligence</div>
+        <div class="feat-desc">Automated drawdown alerts, correlation heatmaps, and AI-driven position sizing to protect and optimize your book.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(239,159,39,0.1)">📰</div>
+        <div class="feat-title">Sentiment radar</div>
+        <div class="feat-desc">NLP models parse earnings calls, SEC filings, news, and social media in real-time to catch narrative shifts early.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(127,119,221,0.1)">⚡</div>
+        <div class="feat-title">Automated playbooks</div>
+        <div class="feat-desc">Build no-code trading rules triggered by AI signals. Set conditions, define actions, let Axium execute at machine speed.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(29,158,117,0.1)">📊</div>
+        <div class="feat-title">Portfolio copilot</div>
+        <div class="feat-desc">Ask plain-English questions about your holdings. Get instant analysis, rebalancing suggestions, and scenario modeling.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- PRICING -->
+  <section class="section">
+    <div class="section-eyebrow">// pricing</div>
+    <h2 class="section-title">Simple, transparent pricing.</h2>
+    <p class="section-sub">Start free, upgrade when the alpha pays for itself.</p>
+    <div class="pricing">
+      <div class="plan">
+        <div class="plan-header"><div class="plan-name">Starter</div></div>
+        <div class="plan-price">$0 <span>/ month</span></div>
+        <div class="plan-desc">Explore the basics</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span>10 AI signals / day</li>
+          <li><span class="check">✓</span>5-stock watchlist</li>
+          <li><span class="check">✓</span>Daily market brief</li>
+          <li><span class="check">✓</span>Basic charting</li>
+        </ul>
+        <button class="plan-btn">Get started free</button>
+      </div>
+      <div class="plan featured">
+        <div class="plan-header">
+          <div class="plan-name">Pro</div>
+          <span class="popular-badge">MOST POPULAR</span>
+        </div>
+        <div class="plan-price">$49 <span>/ month</span></div>
+        <div class="plan-desc">For active investors</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span>Unlimited AI signals</li>
+          <li><span class="check">✓</span>50-stock watchlist</li>
+          <li><span class="check">✓</span>Predictive forecasting</li>
+          <li><span class="check">✓</span>Sentiment radar</li>
+          <li><span class="check">✓</span>Portfolio copilot</li>
+        </ul>
+        <button class="plan-btn featured-btn">Start 14-day trial</button>
+      </div>
+      <div class="plan">
+        <div class="plan-header"><div class="plan-name">Quant</div></div>
+        <div class="plan-price">$149 <span>/ month</span></div>
+        <div class="plan-desc">For professional traders</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span>Everything in Pro</li>
+          <li><span class="check">✓</span>Automated playbooks</li>
+          <li><span class="check">✓</span>API access (10k calls/day)</li>
+          <li><span class="check">✓</span>Custom model fine-tuning</li>
+          <li><span class="check">✓</span>Priority support</li>
+        </ul>
+        <button class="plan-btn">Contact sales</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA STRIP -->
+  <div class="cta-strip">
+    <h2 class="cta-title">Your edge starts today.</h2>
+    <p class="cta-sub">Join thousands of traders using AI to outperform the market. No credit card required.</p>
+    <div class="cta-form">
+      <input class="cta-input" type="email" placeholder="you@example.com">
+      <button class="cta-btn">Get early access</button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-copy">© 2026 Axium Inc. Not financial advice.</span>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Status</a>
+    </div>
+  </footer>
+
+</body>
+</html>
