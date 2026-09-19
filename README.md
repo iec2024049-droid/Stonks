@@ -479,6 +479,4 @@ Stonks is an educational market-research and paper-trading project. It does not 
 
 Always verify financial information independently before making investment decisions.
 
-## Repository
 
-[github.com/Raghav6753123/Stock](https://github.com/Raghav6753123/Stock)
