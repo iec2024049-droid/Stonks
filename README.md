@@ -143,8 +143,8 @@ You will also need API credentials for the external services you want to enable.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Raghav6753123/Stock.git
-cd Stock
+git clone https://github.com/iec2024049-droid/Stonks.git
+cd Stonks
 ```
 
 ### 2. Install dependencies
